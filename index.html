@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.P. Sutton — AI Query</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #1a2332;
+      --charcoal: #2c3e50;
+      --warm-gray: #5a6a7a;
+      --cream: #f8f5f0;
+      --warm-white: #fdfcfa;
+      --bronze: #b8945f;
+      --bronze-light: #d4b87c;
+      --bronze-subtle: rgba(184, 148, 95, 0.12);
+      --rule: rgba(26, 35, 50, 0.1);
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---- EXPIRED STATE ---- */
+    .expired-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--cream);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 2rem;
+      text-align: center;
+    }
+    .expired-overlay.active { display: flex; }
+    .expired-overlay .lock-icon {
+      width: 48px; height: 48px;
+      margin-bottom: 1.5rem;
+      opacity: 0.35;
+    }
+    .expired-overlay p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.05rem;
+      color: var(--warm-gray);
+      max-width: 400px;
+      line-height: 1.7;
+    }
+    .expired-overlay a {
+      color: var(--bronze);
+      text-decoration: none;
+      border-bottom: 1px solid var(--bronze-light);
+    }
+
+    /* ---- INVALID STATE ---- */
+    .invalid-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--cream);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 2rem;
+      text-align: center;
+    }
+    .invalid-overlay.active { display: flex; }
+    .invalid-overlay p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.05rem;
+      color: var(--warm-gray);
+      max-width: 400px;
+      line-height: 1.7;
+    }
+    .invalid-overlay a {
+      color: var(--bronze);
+      text-decoration: none;
+      border-bottom: 1px solid var(--bronze-light);
+    }
+
+    /* ---- MAIN CONTENT ---- */
+    .page-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    /* Hero headline */
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--navy);
+      margin-bottom: 0.75rem;
+    }
+    .hero-intro {
+      font-size: 1.05rem;
+      color: var(--warm-gray);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 2.2rem;
+    }
+    .section-label {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 0.6rem;
+    }
+    .section p {
+      font-size: 0.95rem;
+      color: var(--charcoal);
+      margin-bottom: 0.8rem;
+    }
+
+    /* Examples */
+    .examples {
+      background: var(--warm-white);
+      border-left: 3px solid var(--bronze);
+      padding: 1.2rem 1.4rem;
+      margin: 1rem 0 1.5rem;
+      border-radius: 0 6px 6px 0;
+    }
+    .example-item {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--navy);
+      font-weight: 500;
+      padding: 0.35rem 0;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 2.5rem 0;
+    }
+
+    /* ---- GET STARTED (prominent) ---- */
+    .get-started-section {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      background: var(--warm-white);
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      margin-bottom: 2.5rem;
+    }
+    .get-started-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 1.2rem;
+    }
+    .get-started-instructions {
+      font-size: 0.92rem;
+      color: var(--charcoal);
+      margin-bottom: 1.8rem;
+      line-height: 1.8;
+    }
+    .get-started-instructions ol {
+      text-align: left;
+      display: inline-block;
+      padding-left: 1.2rem;
+    }
+    .get-started-instructions li {
+      margin-bottom: 0.4rem;
+    }
+
+    .download-btn {
+      display: inline-block;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      color: var(--warm-white);
+      background: var(--navy);
+      border: none;
+      padding: 1rem 3rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      text-transform: uppercase;
+    }
+    .download-btn:hover {
+      background: var(--charcoal);
+      transform: translateY(-1px);
+    }
+    .download-btn:active {
+      transform: translateY(0);
+    }
+
+    .version-label {
+      font-size: 0.78rem;
+      color: var(--warm-gray);
+      margin-top: 0.7rem;
+      opacity: 0.7;
+    }
+
+    /* Download confirmation */
+    .download-confirm {
+      display: none;
+      font-size: 0.85rem;
+      color: var(--bronze);
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+    .download-confirm.show { display: block; }
+
+    /* Disclaimer (bottom) */
+    .disclaimer {
+      background: var(--bronze-subtle);
+      border-radius: 6px;
+      padding: 1rem 1.3rem;
+      margin-top: 1.5rem;
+    }
+    .disclaimer p {
+      font-size: 0.82rem;
+      color: var(--warm-gray);
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    .footer p {
+      font-size: 0.78rem;
+      color: var(--warm-gray);
+      line-height: 1.7;
+      opacity: 0.8;
+    }
+    .footer a {
+      color: var(--bronze);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .footer a:hover {
+      border-bottom-color: var(--bronze-light);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .page-wrap { padding: 2rem 1.25rem 3rem; }
+      .hero-title { font-size: 1.75rem; }
+      .get-started-title { font-size: 1.5rem; }
+      .get-started-section { padding: 2rem 1.25rem; }
+    }
+
+    /* Fade-in animation */
+    .page-wrap { opacity: 0; transition: opacity 0.5s ease; }
+    .page-wrap.loaded { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Expired overlay -->
+  <div class="expired-overlay" id="expiredOverlay">
+    <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <p id="expiredMessage"></p>
+  </div>
+
+  <!-- Invalid link overlay -->
+  <div class="invalid-overlay" id="invalidOverlay">
+    <p>This link isn't valid. If you believe this is an error, please contact <a id="invalidEmail" href=""></a> for access.</p>
+  </div>
+
+  <!-- Main content -->
+  <div class="page-wrap" id="pageContent">
+
+    <h1 class="hero-title">Welcome to J.P.&nbsp;Sutton's Safety Reserve</h1>
+    <p class="hero-intro">You've been invited to try the AI Query — a sample of what's included with every Safety Reserve.</p>
+
+    <div class="section">
+      <div class="section-label">What It Does</div>
+      <p>The AI Query takes an unusual signal and a location, and returns a structured summary of what appears to be happening, potential impacts, and what people in the area are doing in response. When relevant, it also surfaces information about roads, transit, and power.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-label">How It Works</div>
+      <p>You describe what caught your attention and where. That's it.</p>
+      <div class="examples">
+        <div class="example-item">Lost power, Cambridge MA</div>
+        <div class="example-item">Strong odor, Midtown Manhattan</div>
+        <div class="example-item">Fire trucks, Shadyside Pittsburgh</div>
+      </div>
+      <p>The query draws from a broad range of sources and applies layered confidence logic — so you're not just getting raw information, you're getting a structured read on how reliable that information appears to be.</p>
+    </div>
+
+    <hr class="divider">
+
+    <div class="get-started-section">
+      <div class="get-started-title">Get Started</div>
+      <div class="get-started-instructions">
+        <ol>
+          <li>Download the AI Query using the button below.</li>
+          <li>Open any AI chat tool (ChatGPT, Gemini, or Claude).</li>
+          <li>Attach the downloaded file to the chat.</li>
+          <li>Enter what caught your attention and where.</li>
+          <li>Send.</li>
+        </ol>
+      </div>
+      <button class="download-btn" id="downloadBtn" onclick="handleDownload()">Download AI Query</button>
+      <div class="version-label" id="versionLabel"></div>
+      <div class="download-confirm" id="downloadConfirm">Downloaded successfully.</div>
+    </div>
+
+    <div class="disclaimer">
+      <p>This is not advice. It is not a substitute for official communications, emergency services, or your own judgment. AI outputs may be incorrect, incomplete, or fabricated. Use this tool as one input among many — never as your sole basis for action.</p>
+    </div>
+
+    <div class="footer">
+      <p>The AI Query is provided as-is for personal, non-commercial use. It is a component of the Safety Reserve by J.P.&nbsp;Sutton. Redistribution or modification is not permitted. For questions or to learn more about the Safety Reserve, contact <a id="footerEmail" href=""></a>.</p>
+    </div>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    (function() {
+      // Parse token from URL
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('t');
+
+      const expiredOverlay = document.getElementById('expiredOverlay');
+      const invalidOverlay = document.getElementById('invalidOverlay');
+      const pageContent = document.getElementById('pageContent');
+      const expiredMessage = document.getElementById('expiredMessage');
+
+      // Set up email links
+      const email = CONFIG.CONTACT_EMAIL;
+      document.getElementById('footerEmail').href = 'mailto:' + email;
+      document.getElementById('footerEmail').textContent = email;
+      document.getElementById('invalidEmail').href = 'mailto:' + email;
+      document.getElementById('invalidEmail').textContent = email;
+
+      // Set version label
+      document.getElementById('versionLabel').textContent = CONFIG.AI_QUERY_VERSION;
+
+      // No token = invalid link
+      if (!token) {
+        invalidOverlay.classList.add('active');
+        pageContent.style.display = 'none';
+        return;
+      }
+
+      // Decode token
+      try {
+        const decoded = JSON.parse(atob(token));
+        const expiry = new Date(decoded.exp);
+        const now = new Date();
+
+        if (now > expiry) {
+          // Link expired
+          expiredMessage.innerHTML = CONFIG.EXPIRED_MESSAGE.replace(
+            CONFIG.CONTACT_EMAIL,
+            '<a href="mailto:' + email + '">' + email + '</a>'
+          );
+          expiredOverlay.classList.add('active');
+          pageContent.style.display = 'none';
+          return;
+        }
+      } catch (e) {
+        // Malformed token
+        invalidOverlay.classList.add('active');
+        pageContent.style.display = 'none';
+        return;
+      }
+
+      // Valid link — show content
+      requestAnimationFrame(function() {
+        pageContent.classList.add('loaded');
+      });
+    })();
+
+    function handleDownload() {
+      const a = document.createElement('a');
+      a.href = CONFIG.DOWNLOAD_FILE;
+      a.download = CONFIG.DOWNLOAD_FILE;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Show confirmation
+      const confirm = document.getElementById('downloadConfirm');
+      confirm.classList.add('show');
+
+      // Log download (stored in localStorage for admin reference)
+      const log = JSON.parse(localStorage.getItem('jps_downloads') || '[]');
+      log.push({
+        timestamp: new Date().toISOString(),
+        version: CONFIG.AI_QUERY_VERSION,
+        userAgent: navigator.userAgent.substring(0, 100)
+      });
+      localStorage.setItem('jps_downloads', JSON.stringify(log));
+    }
+  </script>
+
+</body>
+</html>
